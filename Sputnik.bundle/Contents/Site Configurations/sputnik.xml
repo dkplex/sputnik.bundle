@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site site="http://sputnik.*tv2\.dk/player/boxee/object"
+      plugin="silverlight"
+      initialState="playing">
+      
+    <crop x="0" y="0" width="1024" height="576" />
+    
+    <seekbar type="javascript">
+        <percentComplete equals="$.Content.ScriptableMembers.RequestPosition()" />
+        <bigStep minus="$.Content.ScriptableMembers.RewindVideo()" plus="$.Content.ScriptableMembers.ForwardVideo()" />
+        <smallStep minus="$.Content.ScriptableMembers.RewindVideo()" plus="$.Content.ScriptableMembers.ForwardVideo()" />
+        <end condition="1 == 2" />
+    </seekbar>
+
+    
+    <state name="playing">
+        <event>
+            <condition>
+                <command name="pause" />
+            </condition>
+            <action>
+                <run script="$.Content.ScriptableMembers.PauseVideo()" />
+                <goto state="paused" />
+            </action>
+        </event>
+    </state>
+
+    <state name="paused">
+        <event>
+            <condition>
+                <command name="play" />
+            </condition>
+            <action>
+                <run script="$.Content.ScriptableMembers.PlayVideo()" />
+                <goto state="playing" />
+            </action>
+        </event>
+    </state>
+
+</site>
