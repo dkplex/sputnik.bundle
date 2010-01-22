@@ -8,8 +8,8 @@ import re
 
 VIDEO_PREFIX = "/video/sputnik"
 NAME = L('Title')
-ART           = 'art-sputnik-fancy.png'
-ICON          = 'icon-sputnik.png'
+ART           = 'backdrop.png'
+ICON          = 'icon.png'
 
 NAMESPACES = {"media":"http://search.yahoo.com/mrss/"}
 RSS_SERIES = "http://sputnik.tv2.dk/rss.xml"
