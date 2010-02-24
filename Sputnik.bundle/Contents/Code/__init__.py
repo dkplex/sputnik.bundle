@@ -71,7 +71,7 @@ def ShowSeries(sender, rss_url):
         if(len(path) == 0):
             continue
             
-        m = re.search('http:\/\/sputnik.*.tv2.dk\/play\/([\d]+)', path[0].get('url'))
+        m = re.search('http:\/\/sputnik.*.tv2.dk\/play\/.*-([\d]+)\/$', path[0].get('url'))
         
         dir.Append(Function(WebVideoItem(
                 LoadProgram,
