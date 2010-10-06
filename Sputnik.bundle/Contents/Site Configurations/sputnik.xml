@@ -1,17 +1,62 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<site site="http://sputnik.*tv2\.dk/player/boxee/object"
-      plugin="silverlight"
-      initialState="playing">
+<site site="http://sputnik.*tv2\.dk/player/simple"
+      plugin="silverlight|foobar"
+      identifier="com.plexapp.plugins.sputnik"
+      initialState="wait-for-frame-load">
       
-    <crop x="0" y="0" width="1024" height="576" />
+    <crop x="0" y="0" width="970" height="546" />
     
-    <seekbar type="javascript">
-        <percentComplete equals="$.Content.ScriptableMembers.RequestPosition()" />
-        <bigStep minus="$.Content.ScriptableMembers.RewindVideo()" plus="$.Content.ScriptableMembers.ForwardVideo()" />
-        <smallStep minus="$.Content.ScriptableMembers.RewindVideo()" plus="$.Content.ScriptableMembers.ForwardVideo()" />
-        <end condition="1 == 2" />
+    <seekbar type="simple">
+        <start x="125" y="563" />
+        <end x="675" y="563" />
+        <played>
+            <color rgb="393939" />
+            <color rgb="8aa0a9" />
+            <color rgb="7c8f97" />
+        </played>
     </seekbar>
+    
+    <condition name="need-to-login">
+		<and>
+			<javascript script="login = TV2.Sputnik.userIsLoggedIn() == true ? 0 : 1" matches="1" />
+			<pref name="username" exists="true" />
+			<pref name="password" exists="true" />
+		</and>
+	</condition>
 
+	<!-- Wait for page to load -->
+	<state name="wait-for-frame-load">
+		<event>
+			<condition>
+				<frameLoaded />
+			</condition>
+			<action>
+				<goto state="check-for-auth" />
+			</action>
+		</event>
+	</state>
+
+	<state name="check-for-auth">
+		<event>
+			<condition>
+				<not>
+					<condition name="need-to-login" />
+				</not>
+			</condition>
+			<action>
+				<goto state="playing" />
+			</action>
+		</event>
+		<event>
+			<condition>
+				<condition name="need-to-login" />
+			</condition>
+			<action>
+                <run script='TV2.ajax.asyncRequest("POST", "http://ajax.tv2.dk/login/user/login/", {success:function() {$("#player-embed").sputnikPlayer("reload");}}, {username:"${username}",password:"${password}"})' />
+				<goto state="playing" />
+			</action>
+		</event>
+	</state>
     
     <state name="playing">
         <event>
@@ -19,19 +64,19 @@
                 <command name="pause" />
             </condition>
             <action>
-                <run script="$.Content.ScriptableMembers.PauseVideo()" />
+                <click x="60" y="563" />
                 <goto state="paused" />
             </action>
         </event>
     </state>
-
+        
     <state name="paused">
         <event>
             <condition>
                 <command name="play" />
             </condition>
             <action>
-                <run script="$.Content.ScriptableMembers.PlayVideo()" />
+                <click x="60" y="563" />
                 <goto state="playing" />
             </action>
         </event>

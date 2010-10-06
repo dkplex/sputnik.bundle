@@ -3,13 +3,11 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>English</string>
     <key>CFBundleExecutable</key>
-    <string>Hello</string>
+    <string></string>
     <key>CFBundleIdentifier</key>
     <string>com.plexapp.plugins.sputnik</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
-    <key>PlexFrameworkVersion</key>
-    <string>1</string>
     <key>CFBundlePackageType</key>
     <string>AAPL</string>
     <key>CFBundleSignature</key>
@@ -19,6 +17,10 @@
     <key>PlexPluginMode</key>
     <string>AlwaysOn</string>
     <key>PlexPluginDebug</key>
+    <string>1</string>
+    <key>PlexClientPlatforms</key>
+    <string>MacOSX</string>
+    <key>PlexFrameworkVersion</key>
     <string>1</string>
   </dict>
 </plist>
