@@ -1,25 +1,25 @@
 Sputnik.dk plugin for Plex
 ==========================
 
-This is a (at the moment) simple plugin for sputnik.dk, a danish premium video ondemand provider. 
-To be able to watch content, it requires an subscription, which can be purchased at sputnik.dk.
+This is a for sputnik.dk, a danish premium video ondemand provider. Some content is free, so can
+be watched without an account, but most content requires some kind of subscription.
 
-Most content is only available in Denmark. All content is in danish writing, and so is the menues
-in the plugin.
+Most content is only available in Denmark. All content is in danish writing.
 
 Features
 --------
 
-This plugin is in its early stages of development, and therefore the features is quite limited
-
- * Browse series
- * Play content in series
+* Browse series, categories, latest programs, popular program, sneakpreviews
+* Search for content
+* Play live streams
 
 Known issues
 ------------
 
- * Positionslider not updating
- 
+* Pause, Forward, Rewind does not work
+* All movies will not play correctly
+* Sometimes programs wont start, just hit cancel and try again
+
 Installation
 ------------
 
