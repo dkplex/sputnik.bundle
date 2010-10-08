@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site site="http://sputnik.*tv2\.dk/player/simple"
-      plugin="silverlight|foobar"
+    plugin="silverlight|http://yousee.tv/design/swf/YouSeePartnerPlayer.swf"
       identifier="com.plexapp.plugins.sputnik"
       initialState="wait-for-frame-load">
-      
+
     <crop x="0" y="0" width="970" height="546" />
     
     <seekbar type="simple">
@@ -15,7 +15,7 @@
             <color rgb="7c8f97" />
         </played>
     </seekbar>
-    
+
     <condition name="need-to-login">
 		<and>
 			<javascript script="login = TV2.Sputnik.userIsLoggedIn() == true ? 0 : 1" matches="1" />
@@ -24,7 +24,6 @@
 		</and>
 	</condition>
 
-	<!-- Wait for page to load -->
 	<state name="wait-for-frame-load">
 		<event>
 			<condition>
@@ -64,7 +63,6 @@
                 <command name="pause" />
             </condition>
             <action>
-                <click x="60" y="563" />
                 <goto state="paused" />
             </action>
         </event>
@@ -76,7 +74,6 @@
                 <command name="play" />
             </condition>
             <action>
-                <click x="60" y="563" />
                 <goto state="playing" />
             </action>
         </event>

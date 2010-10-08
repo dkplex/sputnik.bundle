@@ -2,35 +2,23 @@
 from PMS import *
 from PMS.Objects import *
 from PMS.Shortcuts import *
-import re
+import sputnik
 
-####################################################################################################
-
-VIDEO_PREFIX = "/video/sputnik"
-NAME = L('Title')
-ART           = 'backdrop.png'
-ICON          = 'icon.png'
-
-NAMESPACES = {"media":"http://search.yahoo.com/mrss/"}
-API_SERIES = "http://r7.tv2.dk/api/sputnik/series.json"
-API_SNEAKPREVIEWS = "http://r7.tv2.dk/api/sputnik/programs/sneakpreview.json"
-API_LATESTPROGRAMS = "http://r7.tv2.dk/api/sputnik/programs/sort-latest/page-1.json"
-API_CATEGORIES = "http://r7.tv2.dk/api/sputnik/categories.json"
-
-####################################################################################################
+Query = sputnik.Query()
+Profile = sputnik.Profile()
 
 def Start():
-    Plugin.AddPrefixHandler(VIDEO_PREFIX, MainMenu, L('Title'), ICON, ART)
+    Plugin.AddPrefixHandler('/video/sputnik', MainMenu, L('Title'), 'icon.png', 'backdrop.png')
     Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
     Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
     Plugin.AddViewGroup("MediaPreview", viewMode="MediaPreview", mediaType="items")
-    Plugin.AddViewGroup("Showcase", viewMode="Showcase", mediaType="items")
     Plugin.AddViewGroup("Coverflow", viewMode="Coverflow", mediaType="items")
 
-    MediaContainer.art = R(ART)
-    MediaContainer.title1 = NAME
-    DirectoryItem.thumb = R(ICON)
-
+    MediaContainer.art          = R('backdrop.png')
+    MediaContainer.title1       = L('Title')
+    DirectoryItem.thumb         = R('icon.png')
+    InputDirectoryItem.thumb    = R('icon.png')
+    PrefsItem.thumb             = R('icon.png')
 
 def CreatePrefs():
     Prefs.SetDialogTitle('Sputnik account settings')
@@ -39,190 +27,151 @@ def CreatePrefs():
 
 def MainMenu():
     dir = MediaContainer(viewGroup="List")
-    dir.Append(Function(DirectoryItem(ListSeries, 'Series')))
-    dir.Append(Function(DirectoryItem(ListCategories, 'Categories')))
-    dir.Append(Function(DirectoryItem(ListLatestPrograms, 'Latest Programs')))
-    dir.Append(Function(DirectoryItem(ListSneakpreviews, 'Sneakpreviews')))
-    dir.Append(PrefsItem('Settings', 'Sputnik account settings', thumb = R(ICON)))
-    return dir
-    
-def GetImage(entity):
-    selected = R(ICON)
-    
-    for image in entity["media_images"]:
-        current_width = 0
-        if(image["media_image_type"]["code"] == "teaser"):
-            for image_file in image["media_image_files"]:
-                if(float(image_file["width"]) > current_width) and (float(image_file["width"]) > 130):
-                    current_width = float(image_file["width"])
-                    selected = image_file["location_uri"]
-            if(selected != R(ICON)):
-                break
-        
-        if(image["media_image_type"]["code"] == "16:9-thumb"):
-            for image_file in image["media_image_files"]:
-                if(float(image_file["width"]) > current_width):
-                    current_width = float(image_file["width"])
-                    selected = image_file["location_uri"]    
-    
-    return selected
-
-def GetSubtitle(program):
-    out = ""
-    if(program["season"]):
-        out += "Season " + program["season"]["title"]
-        if(program["episode"]):
-            out += " : "
-        
-    if(program["episode"]):
-        out += "Episode "+program["episode"]
-    
-    return out
-    
-def ListSeries(sender):
-    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
-    response = JSON.ObjectFromURL(API_SERIES, cacheTime=300);
-    for series in response["series"]:
-                        
-        dir.Append(Function(DirectoryItem(
-                ShowSeries,
-                title   = series["code"],
-                summary = series["description"],
-                thumb   = GetImage(series)
-            ), id = series["id"]))
-    
+    dir.Append(Function(DirectoryItem(Latest, L('Latest'))))
+    dir.Append(Function(DirectoryItem(Popular, L('Popular'))))
+    dir.Append(Function(DirectoryItem(Sneakpreview, L('Sneakpreview'))))
+    dir.Append(Function(DirectoryItem(Series, L('Series'))))
+    dir.Append(Function(DirectoryItem(Categories, L('Categories'))))
+    dir.Append(Function(DirectoryItem(Live, L('Live'))))
+    dir.Append(Function(InputDirectoryItem(Search, L('Search'), L('Search for:'))))
+    dir.Append(PrefsItem(L('Settings'), L('Sputnik account settings')))
     return dir
 
-def ListCategories(sender):
-    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
-    response = JSON.ObjectFromURL(API_CATEGORIES, cacheTime=300);
-    for category in response["categories"]:
-                        
-        if(category["title"] != None):
-            title = category["title"]
-        else:
-            title = category["code"]                
-                        
-        dir.Append(Function(DirectoryItem(
-                ShowCategory,
-                title   = title,
-                summary = category["description"],
-                thumb   = GetImage(category)
-            ), id = category["id"]))
-    
-    return dir
+def Message(sender, headline, message):
+    return MessageContainer(headline, message)
 
-def ListSneakpreviews(sender):
-    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
-    response = JSON.ObjectFromURL(API_SNEAKPREVIEWS, cacheTime=300);
-    for program in response["programs"]:
-        
-        title = ""
-        if(program["series"]):
-            title += program["series"]["code"]+" - "                
-        title += program["title"]
-                        
-        dir.Append(Function(WebVideoItem(
-                LoadProgram,
-                title   = title,
-                summary = program["description"],
-                subtitle   = GetSubtitle(program),
-                thumb   = GetImage(program)
-            ), id = program["id"]))
-            
-    if(len(dir) == 0):
-        return MessageContainer("Sneakpreviews", 'No programs found')
-    
-    return dir
+def ProgramItem(source, type="program"):
+    if source.nocharge == True or source.group in Profile.groups or source.id in Profile.singles:
+        return WebVideoItem(
+            "http://sputnik-dyn.tv2.dk/player/simple/id/"+source.id+"/type/"+type+"/",
+            title    = source.fulltitle,
+            summary  = source.description,
+            subtitle = source.subtitle,
+            thumb    = source.image.url
+        )
 
-def ListLatestPrograms(sender):
-    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
-    response = JSON.ObjectFromURL(API_LATESTPROGRAMS, cacheTime=300);
-    for program in response["programs"]:
-        
-        title = ""
-        if(program["series"]):
-            title += program["series"]["code"]+" - "                
-        title += program["title"]
-                        
-        dir.Append(Function(WebVideoItem(
-                LoadProgram,
-                title   = title,
-                summary = program["description"],
-                subtitle   = GetSubtitle(program),
-                thumb   = GetImage(program)
-            ), id = program["id"]))
-                
-    return dir
-
-def ShowSeries(sender, id):
-    dir = MediaContainer(viewGroup="Coverflow", title2=sender.itemTitle)
-    response = JSON.ObjectFromURL("http://r7.tv2.dk/api/sputnik/series/"+id+"/programs/sort-latest/page-1.json", cacheTime=300);
-    for program in response["programs"]:
-        dir.Append(Function(WebVideoItem(
-                LoadProgram,
-                title      = response["code"]+" - "+program["title"],
-                summary    = program["description"],
-                subtitle   = GetSubtitle(program),
-                thumb     = GetImage(program)
-            ), id = program["id"]))
-    
-    if(len(dir) == 0):
-        return MessageContainer(response["code"], 'No programs found')
-        
-    return dir
-    
-def ShowCategory(sender, id):
-    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
-    response = JSON.ObjectFromURL("http://r7.tv2.dk/api/sputnik/categories/"+id+".json", cacheTime=300);
-    
-    if(len(response["children"]) > 0):
-        for category in response["children"]:
-            if(category["title"] != None):
-                title = category["title"]
-            else:
-                title = category["code"]                
-                        
-            dir.Append(Function(DirectoryItem(
-                    ShowCategory,
-                    title   = title,
-                    summary = category["description"],
-                    thumb   = GetImage(category)
-            ), id = category["id"]))
     else:
-        response_series = JSON.ObjectFromURL("http://r7.tv2.dk/api/sputnik/categories/"+id+"/series.json", cacheTime=300);
-        if(len(response_series["series"]) > 0):
-            dir.Append(Function(DirectoryItem(
-                    ListCategorySeries,
-                    title   = "Series ("+str(len(response_series["series"]))+")",
-                    summary = "Show all series in category",
-                    thumb   = R(ICON)
-            ), content = response_series["series"]))
-            
-        response_programs = JSON.ObjectFromURL("http://r7.tv2.dk/api/sputnik/categories/"+id+"/programs/sort-latest/page-1.json", cacheTime=300);
-        if(response_programs["total_programs"] > 0):
-            dir.Append(Function(DirectoryItem(
-                    ListCategoryPrograms,
-                    title   = "Programs ("+response_programs["total_programs"]+")",
-                    summary = "Show all programs in category",
-                    thumb   = R(ICON)
-            ), content = response_programs["program"]))
-                
+        Log(source.group)
+        return Function(DirectoryItem(
+            Message,
+            title    = source.fulltitle,
+            summary  = source.description,
+            subtitle = source.subtitle,
+            thumb    = source.image.url
+        ), headline = "Program unavailable", message = "Please consult sputnik.dk for purchasing options")
+
+
+def SeriesItem(source):
+    return Function(DirectoryItem(
+        SeriesPrograms,
+        title   = source.title,
+        summary = source.description,
+        subtitle = source.subtitle,
+        thumb = source.image.url), id = source.id
+    )
+
+def CategoryItem(source):
+    return Function(DirectoryItem(
+        Categories,
+        title   = source.title,
+        summary = source.description,
+        subtitle = source.subtitle,
+        thumb = source.image.url), id = source.id
+    )
+
+def UnknownItem(source):
+    if isinstance(source, sputnik.Series):
+        return SeriesItem(source)
+    if isinstance(source, sputnik.Program):
+        return ProgramItem(source)
+    if isinstance(source, sputnik.Category):
+        return CategoryItem(source)
+    raise Exception('source type not known')
+
+def Live(sender):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    response = Query.LiveChannels()
+    for program in response:
+        dir.Append(ProgramItem(program, type="broadcast"))
     return dir
 
-def ListCategorySeries(sender, content):
+def Series(sender):
     dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
-    
+    response = Query.Series()
+    for serie in response["series"]:
+        dir.Append(SeriesItem(serie))
     return dir
-    
-def ListCategoryPrograms(sender, content):
+
+def Latest(sender):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    response = Query.Programs()
+    for program in response["programs"]:
+        dir.Append(ProgramItem(program))
     return dir
+
+def Popular(sender):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    response = Query.Programs(sort = "popularity")
+    for program in response["programs"]:
+        dir.Append(ProgramItem(program))
+    return dir
+
+def Sneakpreview(sender):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    response = Query.ProgramsSneakpreview()
+    for program in response["programs"]:
+        dir.Append(ProgramItem(program))
+    return dir
+
+def SeriesPrograms(sender, id):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    response = Query.SeriesPrograms(id)
+    for program in response["programs"]:
+        dir.Append(ProgramItem(program))
+
+    pages = int(response["total_pages"])
+    if pages > 1:
+        for i in range(2, pages + 1):
+            response = Query.SeriesPrograms(id, page = str(i))
+            for program in response["programs"]:
+                dir.Append(ProgramItem(program))
+
+    return dir
+
+def Categories(sender, id = None):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    response = Query.Categories(id)
+    for category in response["categories"]:
+        dir.Append(CategoryItem(category))
+
+    if len(dir) == 0:
+        response = Query.CategoryContent(id)
+        for item in response["items"]:
+            dir.Append(UnknownItem(item))
+
+    return dir
+
+
+def Search(sender, query):
+    Profile = Query.AccessProfile()
+    dir = MediaContainer(viewGroup="InfoList", title2=query)
+    response = Query.Search(query)
+    if response == False:
+        return MessageContainer('No results found', 'search for "'+query+'" returned no results');
     
-def LoadProgram(sender, id):
-    url = "http://sputnik-dyn.tv2.dk/player/simple/id/" + id;
-    key = WebVideoItem(url).key
-    return Redirect(key)
+    if len(response["programs"]) == 0 and len(response["series"]) == 0:
+        return MessageContainer('No results found', 'search for "'+query+'" returned no results');
     
-    
-    
-    
+    for series in response["series"]:
+        dir.Append(SeriesItem(series))
+
+    for program in response["programs"]:
+        dir.Append(ProgramItem(program))
+
+    return dir
