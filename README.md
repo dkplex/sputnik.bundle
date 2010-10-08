@@ -17,8 +17,8 @@ Known issues
 ------------
 
 * Pause, Forward, Rewind does not work
-* All movies will not play correctly
-* Sometimes programs wont start, just hit cancel and try again
+* Movies requires flash 10.0 installed, 10.1 will not work (plex bug)
+* Sometimes programs does not start, just hit cancel and try again
 
 Installation
 ------------
