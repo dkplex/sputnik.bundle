@@ -27,14 +27,14 @@ def CreatePrefs():
 
 def MainMenu():
     dir = MediaContainer(viewGroup="List")
-    dir.Append(Function(DirectoryItem(Latest, L('Latest'))))
-    dir.Append(Function(DirectoryItem(Popular, L('Popular'))))
-    dir.Append(Function(DirectoryItem(Sneakpreview, L('Sneakpreview'))))
-    dir.Append(Function(DirectoryItem(Series, L('Series'))))
-    dir.Append(Function(DirectoryItem(Categories, L('Categories'))))
-    dir.Append(Function(DirectoryItem(Live, L('Live'))))
-    dir.Append(Function(InputDirectoryItem(Search, L('Search'), L('Search for:'))))
-    dir.Append(PrefsItem(L('Settings'), L('Sputnik account settings')))
+    dir.Append(Function(DirectoryItem(Latest, 'Seneste')))
+    dir.Append(Function(DirectoryItem(Popular, u'Popul\u00E6re')))
+    dir.Append(Function(DirectoryItem(Sneakpreview, 'Snigpremiere')))
+    dir.Append(Function(DirectoryItem(Series, 'Serier')))
+    dir.Append(Function(DirectoryItem(Categories, 'Kategorier')))
+    dir.Append(Function(DirectoryItem(Live, 'Live')))
+    dir.Append(Function(InputDirectoryItem(Search, u'S\u00F8g', u'S\u00F8g efter:')))
+    dir.Append(PrefsItem('Indstillinger', 'Sputnik konto indstillinger'))
     return dir
 
 def Message(sender, headline, message):
@@ -57,7 +57,7 @@ def ProgramItem(source, type="program"):
             summary  = source.description,
             subtitle = source.subtitle,
             thumb    = source.image.url
-        ), headline = "Program unavailable", message = "Please consult sputnik.dk for purchasing options")
+        ), headline = u"Program ikke tilg\u00E6ngeligt", message = u"Der kan k\u00F8bes adgang via sputnik.dk")
 
 
 def SeriesItem(source):
@@ -162,10 +162,10 @@ def Search(sender, query):
     dir = MediaContainer(viewGroup="InfoList", title2=query)
     response = Query.Search(query)
     if response == False:
-        return MessageContainer('No results found', 'search for "'+query+'" returned no results');
+        return MessageContainer('Ingen resultater fundet', u'S\u00F8gning efter "'+query+'" gav ingen resultater');
     
     if len(response["programs"]) == 0 and len(response["series"]) == 0:
-        return MessageContainer('No results found', 'search for "'+query+'" returned no results');
+        return MessageContainer('Ingen resultater fundet', u'S\u00F8gning efter "'+query+'" gav ingen resultater');
     
     for series in response["series"]:
         dir.Append(SeriesItem(series))
