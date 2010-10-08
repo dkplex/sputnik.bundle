@@ -51,7 +51,6 @@ def ProgramItem(source, type="program"):
         )
 
     else:
-        Log(source.group)
         return Function(DirectoryItem(
             Message,
             title    = source.fulltitle,
