@@ -144,12 +144,13 @@ def SeriesPrograms(sender, id):
 
 def Categories(sender, id = None):
     Profile = Query.AccessProfile()
-    dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
+    dir = MediaContainer(viewGroup="List", title2=sender.itemTitle)
     response = Query.Categories(id)
     for category in response["categories"]:
         dir.Append(CategoryItem(category))
 
     if len(dir) == 0:
+        dir = MediaContainer(viewGroup="InfoList", title2=sender.itemTitle)
         response = Query.CategoryContent(id)
         for item in response["items"]:
             dir.Append(UnknownItem(item))
