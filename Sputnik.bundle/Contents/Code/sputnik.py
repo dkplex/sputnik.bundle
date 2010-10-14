@@ -6,8 +6,8 @@ class Query:
         password = Prefs.Get('password')
         if username == None or password == None:
             return Profile()
-        HTTP.SetPassword('http://r7.tv2.dk/api/sputnik/access/profile.json', username=username, password=password)
-        result = HTTP.Request('http://r7.tv2.dk/api/sputnik/access/profile.json', cacheTime=300);
+        HTTP.SetPassword('http://r7-dyn.tv2.dk/api/sputnik/access/profile.json', username=username, password=password)
+        result = HTTP.Request('http://r7-dyn.tv2.dk/api/sputnik/access/profile.json', cacheTime=300);
         return Profile(JSON.ObjectFromString(result))
 
     def Programs(self, sort="latest", page="1"):
