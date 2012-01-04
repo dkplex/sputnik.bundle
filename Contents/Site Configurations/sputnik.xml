@@ -51,7 +51,7 @@
 				<condition name="need-to-login" />
 			</condition>
 			<action>
-                <run script='TV2.ajax.asyncRequest("POST", "http://ajax.tv2.dk/login/user/login/", {success:function() {$("#player-embed").sputnikPlayer("reload");}}, {username:"${username}",password:"${password}"})' />
+                <run script="TV2.ajax.req({type:'POST', url:$.getLoginURL, data:{username:'${username}',password:'${password}'}, datatype:'json', success:function(){location.reload()}});" />
 				<goto state="playing" />
 			</action>
 		</event>

@@ -1,40 +1,55 @@
 # PMS plugin framework
-from PMS import *
-from PMS.Objects import *
-from PMS.Shortcuts import *
+
 import sputnik
 
 Query = sputnik.Query()
 Profile = sputnik.Profile()
 
+VIDEO_PREFIX = "/video/sputnik"
+ICON = R('icon-default.png')
+NAME = L('Title')
+ART = R('art-default.png')
+
 def Start():
-    Plugin.AddPrefixHandler('/video/sputnik', MainMenu, L('Title'), 'icon.png', 'backdrop.png')
+    Plugin.AddPrefixHandler(VIDEO_PREFIX, MainMenu, NAME, ICON, ART)
     Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
     Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
-    Plugin.AddViewGroup("MediaPreview", viewMode="MediaPreview", mediaType="items")
-    Plugin.AddViewGroup("Coverflow", viewMode="Coverflow", mediaType="items")
+    MediaContainer.art = ART
+    MediaContainer.title1 = NAME
+    DirectoryItem.thumb = ICON
+#    Plugin.AddPrefixHandler('/video/sputnik', MainMenu, L('Title'), 'icon.png', 'backdrop.png')
+#    Plugin.AddViewGroup("InfoList", viewMode="InfoList", mediaType="items")
+#    Plugin.AddViewGroup("List", viewMode="List", mediaType="items")
+#    Plugin.AddViewGroup("MediaPreview", viewMode="MediaPreview", mediaType="items")
+#    Plugin.AddViewGroup("Coverflow", viewMode="Coverflow", mediaType="items")
+#
+#    MediaContainer.art          = R('backdrop.png')
+#    MediaContainer.title1       = L('Title')
+#    DirectoryItem.thumb         = R('icon.png')
+#    InputDirectoryItem.thumb    = R('icon.png')
+#    PrefsItem.thumb             = R('icon.png')
 
-    MediaContainer.art          = R('backdrop.png')
-    MediaContainer.title1       = L('Title')
-    DirectoryItem.thumb         = R('icon.png')
-    InputDirectoryItem.thumb    = R('icon.png')
-    PrefsItem.thumb             = R('icon.png')
-
-def CreatePrefs():
-    Prefs.SetDialogTitle('Sputnik account settings')
-    Prefs.Add(id = 'username', type = 'text', default = None, label = 'Username')
-    Prefs.Add(id = 'password', type = 'text', default = None, label = 'Password', option = 'hidden')
+#def CreatePrefs():
+#    Prefs.SetDialogTitle('Sputnik account settings')
+#    Prefs.Add(id = 'username', type = 'text', default = None, label = 'Username')
+#    Prefs.Add(id = 'password', type = 'text', default = None, label = 'Password', option = 'hidden')
 
 def MainMenu():
-    dir = MediaContainer(viewGroup="List")
-    dir.Append(Function(DirectoryItem(Latest, 'Seneste')))
-    dir.Append(Function(DirectoryItem(Popular, u'Popul\u00E6re')))
-    dir.Append(Function(DirectoryItem(Sneakpreview, 'Snigpremiere')))
-    dir.Append(Function(DirectoryItem(Series, 'Serier')))
-    dir.Append(Function(DirectoryItem(Categories, 'Kategorier')))
-    dir.Append(Function(DirectoryItem(Live, 'Live')))
-    dir.Append(Function(InputDirectoryItem(Search, u'S\u00F8g', u'S\u00F8g efter:')))
-    dir.Append(PrefsItem('Indstillinger', 'Sputnik konto indstillinger'))
+    dir = ObjectContainer(view_group = "List", title1 = NAME, title2 = NAME, art = ART)
+    try:
+        a = 0
+    except:
+        dir.header = "Se det her er pinligt"
+        dir.message = "Der er sket en fejl"
+#    dir = MediaContainer(viewGroup="List")
+#    dir.Append(Function(DirectoryItem(Latest, 'Seneste')))
+#    dir.Append(Function(DirectoryItem(Popular, u'Popul\u00E6re')))
+#    dir.Append(Function(DirectoryItem(Sneakpreview, 'Snigpremiere')))
+#    dir.Append(Function(DirectoryItem(Series, 'Serier')))
+#    dir.Append(Function(DirectoryItem(Categories, 'Kategorier')))
+#    dir.Append(Function(DirectoryItem(Live, 'Live')))
+#    dir.Append(Function(InputDirectoryItem(Search, u'S\u00F8g', u'S\u00F8g efter:')))
+#    dir.Append(PrefsItem('Indstillinger', 'Sputnik konto indstillinger'))
     return dir
 
 def Message(sender, headline, message):
